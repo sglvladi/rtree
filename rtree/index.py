@@ -1878,6 +1878,7 @@ class RtreeContainer(Rtree):
                 raise ValueError('%s supports only in-memory indexes'
                                  % self.__class__)
         self._objects = {}
+        self._error_ids = set()
         return super(RtreeContainer, self).__init__(*args, **kwargs)
 
     def get_size(self):
@@ -2005,7 +2006,13 @@ class RtreeContainer(Rtree):
         if bbox is False:
             for id in super(RtreeContainer,
                             self).intersection(coordinates, bbox):
-                yield self._objects[id][1]
+                try:
+                    yield self._objects[id][1]
+                except KeyError:
+                    if id not in self._error_ids:
+                        print(":-(", id)
+                        self._error_ids.add(id)
+                # yield self._objects[id][1]
         elif bbox is True:
             for value in super(RtreeContainer,
                                self).intersection(coordinates, bbox):
